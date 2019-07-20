@@ -1,5 +1,3 @@
-import abc
-
 class Singleton(str):
     pass
 VOLATILE = Singleton('VOLATILE')    
@@ -87,29 +85,3 @@ def lazy(fn=None, name=None, method=False):
                 setattr(cls, fn.__name__, fn)
             clsdict['__set_name__'] = configure_class_for_lazy
             return type(name, (), clsdict)()
-
-class UserLocator(abc.ABC):
-    @abc.abstractclassmethod
-    def validate(self, username, password):
-        '''
-        Returns a User object which must match the username and password 
-        provided.
-        '''
-
-    @abc.abstractclassmethod
-    def locate(self, user_id):
-        '''
-        Returns a User object which matches the user_id provided.
-        '''
-
-class User(abc.ABC):
-    def __init__(self, user_id, **_kw):
-        self.__dict__.update(_kw)
-        self.user_id = user_id
-
-    @abc.abstractmethod
-    @lazy(name='username', method=True)
-    def get_username(self):
-        '''
-        Retrieves the username from appropriate storage.
-        '''
