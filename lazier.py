@@ -21,8 +21,7 @@ Creating
 'x'
 '''
 
-import sys
-sys.setrecursionlimit(50)
+import sys, abc
 
 if sys.version_info >= (3, 6):
     def if_python_36_or_newer():
@@ -140,7 +139,7 @@ def lazy(fn=None, name=None, method=False):
         # The fn isn't a valid type.  Bomb out.
         raise TypeError('Attempt to use %r as a lazy function' % fn)
 
-class API(object):
+class APINoABC(object):
     '''
     >>> class MyAPI(API):
     ...     def greet(self):
@@ -185,7 +184,7 @@ class API(object):
                 self.name = name
 
         def __set_name__(self, cls, name):
-            setattr(cls, name, Locator(self.cls, self.fn, name))
+            setattr(cls, name, type(self)(self.cls, self.locator_fn, name))
 
         @lazy
         def name(self):
@@ -212,3 +211,10 @@ class API(object):
 
             setattr(target, name, api)
             return api
+
+class API(APINoABC, abc.ABC):
+    pass
+
+method = abc.abstractmethod
+clsmethod = abc.abstractclassmethod
+property = abc.abstractproperty
