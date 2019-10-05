@@ -30,6 +30,10 @@ Requiring a resulting type, generic requirements, and type conversion:
 ...     def x(self):
 ...         return self.x_init
 ...
+...     @lazy(require='str')
+...     def x_str(self):
+...         return self.x_init
+...
 ...     def n_gt_5(n):
 ...         return n > 5
 ...
@@ -52,6 +56,14 @@ TypeError: 'hello' is not a 'int'
 
 >>> MyClass('5').x_as_int
 5
+
+>>> MyClass('hello').x_str
+'hello'
+
+>>> MyClass(5).x_str
+Traceback (most recent call last):
+    ...
+TypeError: 5 is not a 'str'
 
 >>> MyClass(7).x_gt_5
 7
@@ -156,6 +168,8 @@ def lazy(fn=None, name=None, method=None, require=None,
             
         if isinstance(require, type):
             prepare = type_checker(require)
+        elif isinstance(require, str):
+            prepare = type_name_checker(require)
         elif require is not None:
             prepare = requirement_checker(require)
         else:
@@ -217,6 +231,14 @@ def type_checker(isa):
         else:
             return obj
     return type_checker            
+
+def type_name_checker(isa):
+    def type_name_checker(obj, isa=isa):
+        if not any(base.__name__ == isa for base in type(obj).__mro__):
+            raise TypeError('%r is not a %r' % (obj, isa))
+        else:
+            return obj
+    return type_name_checker            
 
 def requirement_checker(requirement):
     def requirement_checker(obj, requirement=requirement):
